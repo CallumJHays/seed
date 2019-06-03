@@ -44,13 +44,14 @@ fn update(msg: Msg, model: &mut Model, _: &mut Orders<Msg>) {
 
 /// A simple component.
 fn success_level(clicks: i32) -> El<Msg> {
-    let descrip = match clicks {
-        0...5 => "Not very many 🙁",
-        6...9 => "I got my first real six-string 😐",
-        10...11 => "Spinal Tap 🙂",
-        _ => "Double pendulum 🙃",
-    };
-    p![descrip]
+    p![
+        match clicks {
+            0...5 => "Not very many 🙁",
+            6...9 => "I got my first real six-string 😐",
+            10...11 => "Spinal Tap 🙂",
+            _ => "Double pendulum 🙃",
+        }
+    ]
 }
 
 /// The top-level component we pass to the virtual dom. Must accept the model as its
@@ -86,14 +87,14 @@ fn view(model: &Model) -> El<Msg> {
                     style! {"padding" => 50},
                     "Nice!",
                     did_mount(|_| log!("This shows when clicks reach 10")),
-                    will_unmount(|_| log!("This shows when clicks drop below 10")),
+                    will_unmount(|_| error!("This shows when clicks drop below 10")),
                 ]
             } else {
                 seed::empty()
             },
         ],
         success_level(model.count), // Incorporating a separate component
-        h3!["What precisely is it we're counting?"],
+        h3!["What is it we're counting?"],
         input![
             attrs! {At::Value => model.what_we_count},
             input_ev(Ev::Input, Msg::ChangeWWC),

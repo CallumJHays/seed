@@ -1,7 +1,8 @@
 # Changelog
 
 ## v0.3.6
-
+- Fetch module and API completely changed (breaking)
+- Fixed a bug where `empty` elements at the top-level were rendering in the wrong order
 
 ## v0.3.5
 - Fixed a bug where view functions returning `Vec<El>` weren't rendering properly

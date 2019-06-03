@@ -391,7 +391,69 @@ impl<Ms, Mdl, ElC: ElContainer<Ms> + 'static> App<Ms, Mdl, ElC> {
         }
 
         let mut orders = Orders::default();
-        (self.cfg.update)(message, &mut self.data.model.borrow_mut(), &mut orders);
+//        (self.cfg.update)(message, &mut self.data.model.borrow_mut(), &mut orders);
+
+//        let f = Closure::wrap(Box::new(move || {
+//            (self.cfg.update)(message, &mut self.data.model.borrow_mut(), &mut orders);
+//        }));
+//        util::request_animation_frame(&f);
+
+
+
+//        let f = Rc::new(RefCell::new(None));
+//        let g = f.clone();
+//
+//        *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
+//
+//            (self.cfg.update)(message, &mut self.data.model.borrow_mut(), &mut orders);
+//
+//            // Schedule ourself for another requestAnimationFrame callback.
+//            util::request_animation_frame(f.borrow().as_ref().unwrap());
+//        }) as Box<FnMut()>));
+//
+//        util::request_animation_frame(g.borrow().as_ref().unwrap());
+//        util::request_animation_frame(&f);
+
+
+
+
+//        with_animation_frame(move || match vdom.inner.upgrade() {
+//            None => {
+//                warn!("VdomWeak::render: vdom unmounted before we could render");
+//                let r = reject.call0(&JsValue::null());
+//                debug_assert!(r.is_ok());
+//            }
+//            Some(inner) => {
+//                let mut exclusive = inner.exclusive.borrow_mut();
+//                exclusive.render();
+//
+//                // We did the render, so take the promise away
+//                // and let future `render` calls request new
+//                // animation frames.
+//                let _ = inner.shared.render_scheduled.take();
+//
+//                let r = resolve.call0(&JsValue::null());
+//                debug_assert!(r.is_ok());
+//            }
+//        });
+
+
+        with_animation_frame(move || {
+            (self.cfg.update)(message, &mut self.data.model.borrow_mut(), &mut orders);
+        });
+
+
+
+//        let f = Rc::new(RefCell::new(None));
+//        let closure_raf: Closure<FnMut() + 'static> =
+//            Closure::once(move || {
+//                (self.cfg.update)(message, &mut self.data.model.borrow_mut(), &mut orders);
+//            });
+//        util::request_animation_frame(&closure_raf);
+//        closure_raf.forget();
+
+
+
 
         self.setup_window_listeners();
 
@@ -516,6 +578,27 @@ impl<Ms, Mdl, ElC: ElContainer<Ms> + 'static> App<Ms, Mdl, ElC> {
         }))
     }
 }
+
+
+
+
+fn with_animation_frame<F>(mut f: F)
+where
+    F: 'static + FnMut(),
+{
+    let g = Rc::new(RefCell::new(None));
+    let h = g.clone();
+
+    let f = Closure::wrap(Box::new(move || {
+        *g.borrow_mut() = None;
+        f();
+    }) as Box<FnMut()>);
+    util::request_animation_frame(&f);
+
+    *h.borrow_mut() = Some(f);
+}
+
+
 
 /// Set up controlled components: Input, Select, and TextArea elements must stay in sync with the
 /// model; don't let them get out of sync from typing or other events, which can occur if a change
